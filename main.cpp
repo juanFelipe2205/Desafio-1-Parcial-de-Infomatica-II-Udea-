@@ -28,13 +28,15 @@ void imprimirMatriz(const vector<vector<int>>& matriz) {
     }
 }
 
-int main() {
-    vector<int> tamaños = {9, 3, 5, 3};
+void GenerarCerraduras(const vector<int>& tamaños) {
     vector<vector<vector<int>>> matrices_generadas;
 
+    // Generar las matrices
     for (int tamaño : tamaños) {
         matrices_generadas.push_back(generarMatriz(tamaño));
     }
+
+    // Imprimir y rotar las matrices generadas
     for (int i = 0; i < matrices_generadas.size(); ++i) {
         cout << "Matriz " << i + 1 << ":\n";
         for (int rotacion = 0; rotacion < 4; ++rotacion) {
@@ -44,6 +46,13 @@ int main() {
             rotarMatrizContraManecillas(matrices_generadas[i]);
         }
     }
+}
+
+
+int main() {
+    vector<int> tamaños = {9, 3, 5, 3};
+
+    GenerarCerraduras(tamaños);
 
     return 0;
 }
