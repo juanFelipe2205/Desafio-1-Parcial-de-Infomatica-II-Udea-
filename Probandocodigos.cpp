@@ -1,101 +1,85 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
 vector<vector<int>> generarMatriz(int tamaño) {
     vector<vector<int>> matriz(tamaño, vector<int>(tamaño));
-    int valor = 1;
-    int centro = tamaño / 2;
-
     for (int i = 0; i < tamaño; ++i) {
         for (int j = 0; j < tamaño; ++j) {
-            matriz[i][j] = valor++;
-            if (i == centro && j == centro) {
-                valor -= 1;
-            }
+            matriz[i][j] = i * tamaño + j + 1;
         }
     }
-    matriz[centro][centro] = 0;
-
+    matriz[tamaño / 2][tamaño / 2] = 0; 
     return matriz;
 }
 
-void rotarMatrizContraManecillas(vector<vector<int>>& matriz) {
-    int tamaño = matriz.size();
+void rotarMatrizContraManecillas(vector<vector<int>>& matriz, int tamaño) {
     vector<vector<int>> matriz_rotada(tamaño, vector<int>(tamaño));
     for (int i = 0; i < tamaño; ++i) {
         for (int j = 0; j < tamaño; ++j) {
-            matriz_rotada[tamaño - 1 - j][i] = matriz[i][j];
+            matriz_rotada[i][j] = matriz[tamaño - 1 - j][i];
         }
     }
     matriz = matriz_rotada;
 }
 
-bool verificarCondicion(const vector<vector<int>>& matriz, int fila, int columna, int relacion) {
-    int tamaño = matriz.size();
-    if (fila < 0 || fila >= tamaño || columna < 0 || columna >= tamaño) {
-        return false;
-    }
-    int valor = matriz[fila][columna];
-    int siguiente_valor = (relacion == 1) ? valor - 1 : valor + 1;
-    return (siguiente_valor >= 1 && siguiente_valor <= tamaño * tamaño);
-}
-
-bool validarClave(const vector<vector<int>>& matriz, int fila, int columna, int relacion) {
-    return verificarCondicion(matriz, fila, columna, relacion);
-}
-
-void GenerarCerraduras(const vector<int>& clave) {
-    vector<int> X;
-    vector<int> rotaciones;
-    int tamaño_base = 5; 
-
-    while (true) {
-        int rotaciones_contador = 0;
-        vector<vector<vector<int>>> matrices;
-        for (int i = 0; i < clave.size(); i += 3) {
-            matrices.push_back(generarMatriz(tamaño_base));
-        }
-
-        bool cumplido = true;
-        for (int r = 0; r < matrices.size(); ++r) {
-            if (!validarClave(matrices[r], clave[r * 3], clave[r * 3 + 1], clave[r * 3 + 2])) {
-                cumplido = false;
-                break;
+void imprimirMatriz(const vector<vector<int>>& matriz, int tamaño) {
+    for (int i = 0; i < tamaño; ++i) {
+        for (int j = 0; j < tamaño; ++j) {
+            if (matriz[i][j] == 0) {
+                cout << "  ";
+            } else {
+                cout << matriz[i][j] << " ";
             }
         }
-
-        if (cumplido) {
-            X.push_back(tamaño_base);
-            rotaciones.push_back(rotaciones_contador);
-            break;
-        }
-
-        for (auto& matriz : matrices) {
-            rotarMatrizContraManecillas(matriz);
-        }
-        rotaciones_contador++;
-        tamaño_base += 2; 
+        cout << endl;
     }
+}
 
-    cout << "X(";
-    for (int i = 0; i < X.size(); ++i) {
-        if (i > 0) {
-            cout << ",";
+void GenerarCerraduras(int tamañoPrimeraMatriz, const vector<int>& claveK) {
+    vector<vector<vector<int>>> matrices_generadas;
+    int tamaño = tamañoPrimeraMatriz;
+    vector<vector<int>> matriz_actual = generarMatriz(tamaño);
+    int fila_clave = claveK[0];
+    int columna_clave = claveK[1];
+
+    for (int i = 2; i < claveK.size(); ++i) {
+        int valor_clave = claveK[i];
+        for (int j = 0; j < valor_clave; ++j) {
+            if (matriz_actual[fila_clave][columna_clave] < matriz_actual[fila_clave + 1][columna_clave]) {
+                rotarMatrizContraManecillas(matriz_actual, tamaño);
+            } else if (matriz_actual[fila_clave][columna_clave] > matriz_actual[fila_clave + 1][columna_clave]) {
+                tamaño += 2;
+                matriz_actual = generarMatriz(tamaño);
+                j = -1; 
+            } else {
+          
+                ++fila_clave;
+                if (fila_clave >= tamaño - 1) {
+                    cout << "Se ha alcanzado el final de la matriz sin cumplir la condición." << endl;
+                    break;
+                }
+            }
         }
-        cout << X[i];
-    }
-    cout << ")" << endl;
+        matrices_generadas.push_back(matriz_actual);
 
-    for (int i = 0; i < rotaciones.size(); ++i) {
-        cout << "Rotaciones de la matriz " << i + 1 << ": " << rotaciones[i] << endl;
+        cout << "Matriz " << i - 1 << ":\n";
+        imprimirMatriz(matriz_actual, tamaño);
+        cout << endl;
     }
 }
 
 int main() {
-    vector<int> clave = {4, 3, 1, -1, 1};
-    GenerarCerraduras(clave);
+    int tamañoPrimeraMatriz;
+    cout << "Ingrese el tamaño de la primera matriz: ";
+    cin >> tamañoPrimeraMatriz;
+
+    vector<int> claveK = {4, 3, 1, -1, 1};
+
+    GenerarCerraduras(tamañoPrimeraMatriz, claveK);
 
     return 0;
 }
+
